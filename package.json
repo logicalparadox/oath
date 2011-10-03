@@ -1,0 +1,19 @@
+{
+  "author": "Jake Luer <<@jakeluer>",
+  "name": "oath",
+  "description": "Tiny promises.",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/logicalparadox/oath.git"
+  },
+  "main": "./lib/oath.js",
+  "scripts": {
+    "test": "expresso -I ./lib test/*.test.js"
+  },
+  "engines": {
+    "node": "~0.4.12"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
