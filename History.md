@@ -1,4 +1,9 @@
 
+0.0.3 / 2011-10-04 
+==================
+
+  * bugfix: skip pending that don't have required response callback
+
 0.0.2 / 2011-10-04 
 ==================
 
