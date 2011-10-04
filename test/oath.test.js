@@ -24,10 +24,11 @@ module.exports = {
       return o;
     };
     
-    promise({ doctor: 'who' }).then(success, failure);
+    promise({ doctor: 'who' })
+      .then(success, failure);
     
     this.on('exit', function () {
-      assert.equal(n, 1, 'the success function has been called');
+      assert.equal(n, 1, 'the success function has been called twice');
     });
   },
   'basic oath failure': function () {
@@ -49,10 +50,11 @@ module.exports = {
       return o;
     };
     
-    promise({ doctor: 'who' }).then(success, failure);
-    
+    promise({ doctor: 'who' })
+      .then(success) // if no failure object skip
+      .then(success, failure);
     this.on('exit', function () {
-      assert.equal(n, -1, 'the success function has been called');
+      assert.equal(n, -1, 'i have successfully failed');
     });
   },
   'multiple then chains on success in order': function () {
