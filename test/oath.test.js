@@ -2,11 +2,14 @@ var assert = require('assert'),
     oath = require('oath');
 
 module.exports = {
-  'its an oath': function() {
+  'oath has version': function () {
+    assert.isNotNull(oath.version);
+  },
+  'basic oath success': function() {
     var n = 0;
-    var success = function () {
+    var success = function (data) {
       n++;
-      assert.ok(true);
+      assert.eql(data, { doctor: 'who' });
     };
     
     var failure = function () {
