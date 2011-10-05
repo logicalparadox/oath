@@ -35,7 +35,8 @@
   
   this.pending = [];
   this._options = {
-    parent: options.parent || null
+    parent: options.parent || null,
+    context: options.context || this
   };</code></pre></div><div class="comment"><h3>this.resolve()</h3><div class="summary"><h2>Oath#resolve</h2></div><ul class="tags"><li><span class="type">param:</span>{
 <span class="types">Object</span>}
 <span class="name">result</span><span class="description"></span></li></ul><div class="body"><p>Emits completion event to execute <code>success</code> chain of functions.</p>
@@ -63,7 +64,17 @@
    .then(successFn1, failureFn1)
    .then(successFn2, failureFn2)
 </code></pre></div><a href="#" class="button view-source">view source</a><pre class="source"><code>Oath.prototype.then = function (success, failure) {
-  this.pending.push({ resolve: success, reject: failure });
+  var context = this._options.context,
+      pending = { resolve: null, reject: null };
+  
+  if (success)
+    pending.resolve = function () { success.apply(context, arguments); };
+  
+  if (failure)
+    pending.reject = function () { failure.apply(context, arguments); };
+  
+  this.pending.push(pending);
+  
   return this;
 };</code></pre></div><div class="comment"><h3>Oath.prototype.get()</h3><div class="summary"><h1>get</h1></div><ul class="tags"><li><span class="type">param:</span>{
 <span class="types">String</span>}
