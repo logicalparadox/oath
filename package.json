@@ -2,7 +2,7 @@
   "author": "Jake Luer <<@jakeluer>",
   "name": "oath",
   "description": "Tiny promises.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "http://logicalparadox.github.com/oath",
   "repository": {
     "type": "git",
