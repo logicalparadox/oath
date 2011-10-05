@@ -1,4 +1,9 @@
 
+0.0.4 / 2011-10-05 
+==================
+
+  * oaths now except and apply custom context during 'then' callbacks
+
 0.0.3 / 2011-10-04 
 ==================
 
