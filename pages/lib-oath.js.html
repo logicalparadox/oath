@@ -6,7 +6,7 @@
 
 <ul>
 <li>parent - used internally for chaining</li>
-<li>...</li>
+<li>context - object to set as <code>this</code> in callbacks</li>
 </ul>
 
 <h4>You can use <code>Oath</code> within single functions</h4>
@@ -54,7 +54,7 @@
 </code></pre></div><a href="#" class="button view-source">view source</a><pre class="source"><code>this.reject = function (result) {
     self.complete('reject', result);
   };
-}</code></pre></div><div class="comment"><h3>Oath.prototype.then()</h3><div class="summary"><h1>then</h1></div><ul class="tags"><li><span class="type">param:</span>{
+}</code></pre></div><div class="comment"><h3>Oath.prototype.then()</h3><div class="summary"><h1>.then()</h1></div><ul class="tags"><li><span class="type">param:</span>{
 <span class="types">Function</span>}
 <span class="name">success</span><span class="description">will execute on `resolve` </span></li><li><span class="type">param:</span>{
 <span class="types">Function</span>}
@@ -76,9 +76,9 @@
   this.pending.push(pending);
   
   return this;
-};</code></pre></div><div class="comment"><h3>Oath.prototype.get()</h3><div class="summary"><h1>get</h1></div><ul class="tags"><li><span class="type">param:</span>{
+};</code></pre></div><div class="comment"><h3>Oath.prototype.get()</h3><div class="summary"><h1>.get()</h1></div><ul class="tags"><li><span class="type">param:</span>{
 <span class="types">String</span>}
-<span class="name">property</span><span class="description"></span></li></ul><div class="body"><p>On <code>resolve</code>, will return <code>property</code> value from data passed by oath. Subsequent <code>then</code> calls will <br />have the value of the <code>get</code> passed to them.</p>
+<span class="name">property</span><span class="description"></span></li></ul><div class="body"><p>On <code>resolve</code>, will return <code>property</code> value from data <br />passed by oath. Subsequent <code>then</code> calls will have the <br />value of the <code>get</code> passed to them.</p>
 
 <pre><code> doSomething(my_data).get('doctor')
    .then(function(doctor) { ... })
@@ -90,7 +90,7 @@
     function(value) { o.reject(value); }
   );
   return o;
-};</code></pre></div><div class="comment"><h3>Oath.prototype.pop()</h3><div class="summary"><h1>pop</h1></div><ul class="tags"></ul><div class="body"><p>Return you to a parent oath if you have chained down.</p>
+};</code></pre></div><div class="comment"><h3>Oath.prototype.pop()</h3><div class="summary"><h1>.pop()</h1></div><ul class="tags"></ul><div class="body"><p>Return you to a parent oath if you have chained down.</p>
 
 <pre><code> doSomething(my_data)
    .get('doctor')
@@ -103,9 +103,9 @@
   } else {
     return this;
   }
-};</code></pre></div><div class="comment"><h3>Oath.prototype.call()</h3><div class="summary"><h1>call</h1></div><ul class="tags"><li><span class="type">param:</span>{
+};</code></pre></div><div class="comment"><h3>Oath.prototype.call()</h3><div class="summary"><h1>.call()</h1></div><ul class="tags"><li><span class="type">param:</span>{
 <span class="types">String</span>}
-<span class="name">function</span><span class="description">name</span></li></ul><div class="body"><p>On <code>resolve</code>, will execute a function of <code>name</code> in the result object. The function that is called <br />will be passed all subseqents parameters of <code>oath.call</code>. The context of <code>this</code> in the function <br />that is called will be equal to the <code>result</code> object passed on <code>oath.resolve</code>.</p>
+<span class="name">function</span><span class="description">name</span></li></ul><div class="body"><p>On <code>resolve</code>, will execute a function of <code>name</code> in the <br />result object. The function that is called will be passed <br />all subseqents parameters of <code>oath.call</code>. The context of <br /><code>this</code> in the function that is called will be equal to the <br /><code>result</code> object passed on <code>oath.resolve</code>.</p>
 
 <pre><code> // queue up call on complete
  oath.call('validate', '1234');
