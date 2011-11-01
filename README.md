@@ -59,7 +59,7 @@ doAsync
 
 ## Using Oath in Async Function
 
-*Full API docs available [here](http://alogicalparadox.com/oath/).
+*Full API docs available [here](http://alogicalparadox.com/oath/).*
 
 The async function above returned a new `oath` and then queued up a bunch of success or failure callbacks.
 Here is a look at the internals of `asyncFunc`. In this scenario, let's say we are querying a database,
