@@ -1,20 +1,22 @@
 {
-  "author": "Jake Luer <<@jakeluer>",
+  "author": "Jake Luer <jake@alogicalparadox.com>",
   "name": "oath",
-  "description": "Tiny promises.",
+  "description": "Tiny promises / futures.",
   "version": "0.0.5",
   "homepage": "http://logicalparadox.github.com/oath",
   "repository": {
     "type": "git",
     "url": "git://github.com/logicalparadox/oath.git"
   },
-  "main": "./lib/oath.js",
+  "main": "index",
   "scripts": {
-    "test": "expresso -I ./lib test/*.test.js"
+    "test": "sherlock test/*.test.js"
   },
   "engines": {
     "node": "~0.4.12"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "sherlock": "0.1.x"
+  }
 }
