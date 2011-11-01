@@ -1,6 +1,6 @@
 # Oath
 
-Oath is a tiny little javascript library that makes it easy to build future based APIs.
+Oath is a tiny javascript library that makes it easy to build future based APIs.
 
 ## What is a future anyway?
 
