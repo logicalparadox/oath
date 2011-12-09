@@ -25,7 +25,7 @@ var exports = module.exports = Oath;
 /*!
  * oath version
  */
-exports.version = '0.0.5';
+exports.version = '0.1.0';
 
 /**
  * # Oath constructor
@@ -37,8 +37,9 @@ exports.version = '0.0.5';
  * * parent - used internally for chaining
  * * context - object to set as `this` in callbacks
  *
- * #### You can use `Oath` within single functions
+ * You can use `Oath` within single functions
  *
+ *      // assignment style
  *      var promise = new oath();
  *      promise.then(successFn, errorFn);
  *      myAsycFunction(function(err, result) {
@@ -46,8 +47,9 @@ exports.version = '0.0.5';
  *        promise.resolve(result);
  *      });
  *
- * #### Or return them to ease chaining of callbacks
+ * Or return them to ease chaining of callbacks
  *
+ *      // return style
  *      function doSomething(data) {
  *        var promise = new oath();
  *        // async stuff here
@@ -57,7 +59,9 @@ exports.version = '0.0.5';
  *
  *      doSomething(data).then(successFn, errorFn);
  *
+ * @name constructor
  * @param {Object} options
+ * @api public
  */
 
 function Oath (options) {
@@ -71,36 +75,40 @@ function Oath (options) {
   };
 
   /**
-   * ## Oath#resolve
+   * ## Oath.resolve(result)
    *
    * Emits completion event to execute `success` chain of functions.
    *
    *        // When async work is complete
    *        promise.resolve(my_data_obj);
    *
+   * @name Oath.resolve
    * @param {Object} result
+   * @api public
    */
   this.resolve = function (result) {
-    self.complete('resolve', result);
+    self._complete('resolve', result);
   };
 
   /**
-   * ## Oath#reject
+   * ## Oath.reject(result)
    *
    * Emit completion event to execute `failure` chain of functions.
    *
    *        // When async work errors
    *        promise.reject(my_error_obj);
    *
+   * @name Oath.reject
    * @param {Object} result
+   * @api public
    */
   this.reject = function (result) {
-    self.complete('reject', result);
+    self._complete('reject', result);
   };
 }
 
 /**
- * # .then()
+ * # .then([success], [failure])
  *
  * Chainable function for promise observers to queue result functions.
  *
@@ -108,8 +116,10 @@ function Oath (options) {
  *        .then(successFn1, failureFn1)
  *        .then(successFn2, failureFn2)
  *
+ * @name then
  * @param {Function} success will execute on `resolve`
  * @param {Function} failure will execute on `reject` (optional)
+ * @api public
  */
 
 Oath.prototype.then = function (success, failure) {
@@ -128,18 +138,22 @@ Oath.prototype.then = function (success, failure) {
 };
 
 /**
- * # .get()
+ * # .get(property)
  *
  * On `resolve`, will return `property` value from data
  * passed by oath. Subsequent `then` calls will have the
  * value of the `get` passed to them.
  *
- *      doSomething(my_data).get('doctor')
- *        .then(function(doctor) { ... })
- *        .then(function(doctor) { ... });
+ *      doSomething(my_data)
+ *        .get('doctor')
+ *          .then(function(doctor) { ... })
+ *          .then(function(doctor) { ... });
  *
+ * @name get
  * @param {String} property
+ * @api public
  */
+
 Oath.prototype.get = function (property) {
   var o = new Oath({ parent: this });
   this.then(
@@ -160,7 +174,10 @@ Oath.prototype.get = function (property) {
  *          .pop()
  *        .then(function(my_data) { ... });
  *
+ * @name pop
+ * @api public
  */
+
 Oath.prototype.pop = function () {
   if (this._options.parent) {
     return this._options.parent;
@@ -171,7 +188,7 @@ Oath.prototype.pop = function () {
 
 
 /**
- * # .call()
+ * # .call(functionName)
  *
  * On `resolve`, will execute a function of `name` in the
  * result object. The function that is called will be passed
@@ -190,7 +207,9 @@ Oath.prototype.pop = function () {
  *          }
  *        });
  *
+ * @name call
  * @param {String} function name
+ * @api public
  */
 
 Oath.prototype.call = function (fn) {
@@ -201,16 +220,17 @@ Oath.prototype.call = function (fn) {
 };
 
 /*!
- * # .complete()
+ * # ._complete(type, result)
  *
  * Start the callback chain.
  *
+ * @name complete
  * @param {String} type
  * @param {Object} result
  * @api private
  */
 
-Oath.prototype.complete = function (type, result) {
+Oath.prototype._complete = function (type, result) {
   var fn;
   while (this.pending[0]) {
     fn = this.pending.shift()[type];
