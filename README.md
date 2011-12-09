@@ -1,11 +1,13 @@
+[![Build Status](https://secure.travis-ci.org/logicalparadox/oath.png)](http://travis-ci.org/logicalparadox/oath)
+
 # Oath
 
 Oath is a tiny javascript library that makes it easy to build future based APIs.
 
 ## What is a future anyway?
 
-A future (or promise), is an alternative method to callbacks when working with asyncronous 
-code. For more information check out the very information Wikipedia article 
+A future (or promise), is an alternative method to callbacks when working with asyncronous
+code. For more information check out the very information Wikipedia article
 on [Futures and Promises](http://en.wikipedia.org/wiki/Futures_and_promises).
 
 ## Installation
@@ -13,7 +15,7 @@ on [Futures and Promises](http://en.wikipedia.org/wiki/Futures_and_promises).
 Oath is available in npm:
 
       $ npm install oath
-      
+
 ## Help, resources, and issues?
 
 * The annotated source / full API documentation is available at [alogicalparadox.com/oath](http://alogicalparadox.com/oath/).
@@ -23,12 +25,12 @@ Oath is available in npm:
 
 * Client side version
 
-Want to see something else? All pull requests will be seriously considered or 
+Want to see something else? All pull requests will be seriously considered or
 open a `feature` request on [Github Issues](https://github.com/logicalparadox/oath/issues).
 
 ## Code Sample of a Futures Style API
 
-A future enabled async function will return an instance of an Oath. Here is what 
+A future enabled async function will return an instance of an Oath. Here is what
 interacting with your API would look like if you implemented Oath as your futures solution.
 
 In the following scenario, an async function will return an oath and then begin doing its
@@ -68,7 +70,7 @@ doing some minupulation to the dataset, then returned an object that represents 
 ```js
 function asyncFunc(id) {
   var promise = new oath();
-  
+
   // db.get is async function with callback
   db.get({_id: id}, function(err, result) {
     if (err) {
@@ -78,7 +80,7 @@ function asyncFunc(id) {
     // ...
     promise.resolve(result); // execute success stack sending it the result
   });
-  
+
   // promise will be returned immediately
   return promise;
 }
@@ -92,7 +94,7 @@ to execute the success stack, returning the result to each function in that stac
 
 ## Tests
 
-Tests are writting in [Sherlock](http://github.com/logicalparadox/sherlock). Make sure you have that 
+Tests are writting in [Sherlock](http://github.com/logicalparadox/sherlock). Make sure you have that
 installed, clone this repo, install dependacies using `npm install`.
 
     $ sherlock test/*.test.js
