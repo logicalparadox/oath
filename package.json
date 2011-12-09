@@ -10,13 +10,15 @@
   },
   "main": "index",
   "scripts": {
-    "test": "sherlock test/*.test.js"
+    "test": "make test"
   },
   "engines": {
-    "node": "~0.4.12"
+    "node": ">= 0.4.8"
   },
   "dependencies": {},
   "devDependencies": {
-    "sherlock": "0.1.x"
+    "mocha": "*",
+    "chai": "*",
+    "folio": "0.1.x"
   }
 }
