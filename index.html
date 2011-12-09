@@ -1,1 +1,194 @@
-<!DOCTYPE html><html><head><title>Oath documentation</title><link rel="stylesheet" href="public/main.css"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script><script src="public/main.js"></script></head><body><div id="header"><h1>Oath</h1><div class="description"><p>Tiny promises for node.js and browser (using browserify). Independant distribution coming soon.</p></div><a href="https://github.com/logicalparadox/oath" class="button github">Fork me on GitHub</a><div class="clone">git clone https://github.com/logicalparadox/oath</div></div><div id="content"></div><ul id="files"><li><a href="/" class="nojax">home</a></li><li><a href="pages/lib-oath.js.html">lib/oath.js</a></li></ul></body></html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Home - Oath
+    </title>
+    <script type="text/javascript">var ghuser = 'logicalparadox'
+  , ghproject = 'oath';
+
+</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+    <script src="/oath/public/js/prettify.js"></script>
+    <script src="/oath/public/js/main.js"></script>
+    <link rel="stylesheet" href="/oath/public/css/main.css" type="text/css" media="all">
+    <link href="http://fonts.googleapis.com/css?family=Lato:100,300" rel="stylesheet" type="text/css">
+    <script type="text/javascript">var mpq = [];
+mpq.push(["init", "268c122423c94bf806c254a27a491302"]);
+(function(){var b,a,e,d,c;b=document.createElement("script");b.type="text/javascript";
+b.async=true;b.src=(document.location.protocol==="https:"?"https:":"http:")+
+"//api.mixpanel.com/site_media/js/api/mixpanel.js";a=document.getElementsByTagName("script")[0];
+a.parentNode.insertBefore(b,a);e=function(f){return function(){mpq.push(
+[f].concat(Array.prototype.slice.call(arguments,0)))}};d=["init","track","track_links",
+"track_forms","register","register_once","identify","name_tag","set_config"];for(c=0;c<
+d.length;c++){mpq[d[c]]=e(d[c])}})();
+</script>
+    <script type="text/javascript">var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-26183904-4']);
+_gaq.push(['_trackPageview']);
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+  </head>
+  <body>
+    <nav>
+      <ul class="sections">
+        <li><a href="#installation" class="scroll">Installation</a>
+        </li>
+        <li><a href="#usage" class="scroll">Usage Scenarios</a>
+        </li>
+        <li><a href="#help" class="scroll">Getting Help</a>
+        </li>
+        <li><a href="#contributor" class="scroll">For Contributors</a>
+        </li>
+      </ul>
+      <ul class="code">
+        <li><a href="/oath/code/index.html">lib/oath.js</a>
+        </li>
+      </ul>
+    </nav>
+    <header>
+      <h1><a href="/oath">Oath</a>
+      </h1>
+      <div class="description"><p>Oath is a tiny javascript library for <a href="http://nodejs.org">node</a> and the browser that makes it easy to build and interact with promise/future based APIs.</p>
+      </div>
+      <div class="gh">
+        <h4>Latest Update to Github
+        </h4>
+        <div id="commit"><span id="latestCommitTime">Loading...</span><a id="latestCommitURL"></a>
+        </div>
+        <div id="latestCommitMessage">Loading...
+        </div>
+        <div id="clone"><a href="https://github.com/logicalparadox/oath" class="button fork">Fork me on GitHub</a>
+          <div class="clone">git clone https://github.com/logicalparadox/oath.git
+          </div>
+        </div>
+        <div id="links"><a id="repoIssues" href="https://github.com/logicalparadox/oath/issues">GitHub Issues</a><a id="repoDownload" href="https://github.com/downloads/logicalparadox/oath/oath-0.1.0.zip">Download v0.1.0
+</a>
+        </div>
+      </div>
+    </header>
+    <section id="content">
+      <article>
+        <h1 id="installation-section"><a name="installation">Installation</a>
+        </h1>
+        <section><p>Oath is available for both server-side and the browser.</p>
+
+<h3>Node.js</h3>
+
+<p>Package is available through <a href="http://npmjs.org">npm</a>:</p>
+
+<pre><code>npm install oath</code></pre>
+
+<h3>Browser</h3>
+
+<p>Download the package above.</p>
+
+<p>And include either the normal or minimized build in your HTML header.</p>
+
+<pre><code>&lt;script src=&quot;/public/js/oath.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;/public/js/oath.min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</code></pre>
+        </section>
+        <h1 id="usage-section"><a name="usage">Usage Scenarios</a>
+        </h1>
+        <section><h3>Using Oath in Async Functions</h3>
+
+<p>Our async function will returne a new <code>oath</code> and to allow queue of success or failure callbacks be
+registered by the recieving function. Here is a look at the internals of <code>asyncFunc</code>. In this
+scenario, let&#39;s say we are querying a database,doing some minupulation to the dataset, then
+returned an object that represents its data.</p>
+
+<pre><code>function asyncFunc(id) {
+  var promise = new oath();
+
+  // db.get is async function with callback
+  db.get({_id: id}, function(err, result) {
+    if (err) {
+      promise.reject(err); // we had an error, execute failure stack
+      return; // we are done here
+    }
+    // ...
+    promise.resolve(result); // execute success stack sending it the result
+  });
+
+  // promise will be returned immediately
+  return promise;
+}</code></pre>
+
+<p>Since <code>db.get</code> is asyncronous, the promise will be returned immediately. Our callbacks will be queued.</p>
+
+<p>When <code>db.get</code> is done, the callback is executed. If there was an error, we call <code>reject</code> on our promise
+to execute the falure stack. If there was no error, we continue, do our work, then <code>resolve</code> our promise
+to execute the success stack, returning the result to each function in that stack.</p>
+
+<h3>Code Sample of a Futures Style API</h3>
+
+<p>In the following scenario, an async function will return an oath and then begin doing its
+work. Upon completion of the async work it will either execute the <code>success</code> stack or the <code>failure</code>
+stack, passing the result or the error object, respectively.</p>
+
+<pre><code>var success = function (data) {
+  console.log(&#39;We were a success: &#39; + data);
+}
+
+var failure = function (err) {
+  console.log(&#39;We had an error: &#39; + err);
+}
+
+var doAsync = asyncFunc(123);
+
+doAsync.then(success, failure);</code></pre>
+
+<p>And primary advantage being that a queue is built. You can later queue more callbacks onto
+the <code>doAsync</code> as needed.</p>
+
+<pre><code>doAsync.then(success2, failure2);
+// other code stuff here
+doAsync.then(success3);
+// more stff
+doAsync.then(null, failure3);</code></pre>
+        </section>
+        <h1 id="help-section"><a name="help">Getting Help</a>
+        </h1>
+        <section><p>If you have questions or issues, please use this projects <a href="https://github.com/logicalparadox/oath/issues">Github Issues</a>.</p>
+        </section>
+        <h1 id="contributor-section"><a name="contributor">For Contributors</a>
+        </h1>
+        <section><h3>Developing</h3>
+
+<p>Please avoid making changes to the <code>dist</code> versions of oath if you are developing in the browser. All
+changes to the library are to be made to <code>lib/oath.js</code> and then packaged for the browser using the <code>make</code>
+command.</p>
+
+<pre><code>  $ make</code></pre>
+
+<h3>Testing</h3>
+
+<p>Tests are written in BDD style on <a href="http://visionmedia.github.com/mocha/">mocha test framework</a> using
+the <a href="https://github.com/logicalparadox/chai">chai assert library</a>. Tests are written to pass in both
+a node.js environment and in the browser.</p>
+
+<p>Browsers tests are currently known to pass in Chrome 16 and Firefox 8. Please let me know if you can test
+in other browsers or other version.</p>
+
+<h4>Server Side Testing</h4>
+
+<p>It&#39;s quite simple...</p>
+
+<pre><code>  make test</code></pre>
+
+<h4>Browser Side Testing</h4>
+
+<p>It&#39;s also quite simple. Open up <code>test/browser/index.html</code> in your nearest browser.</p>
+        </section>
+      </article>
+    </section>
+    <footer>
+      <div class="branding">Oath is&nbsp;<a href="http://alogicalparadox.com">a logical paradox</a>. site generated by
+<a href="http://codexjs.com">codex.</a>
+      </div>
+    </footer>
+  </body>
+</html>
