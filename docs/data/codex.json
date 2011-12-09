@@ -1,0 +1,21 @@
+{
+  "locals": {
+    "title": "Oath",
+    "googleanalytics": "UA-26183904-4",
+    "mixpanel": "268c122423c94bf806c254a27a491302",
+    "ghuser": "logicalparadox",
+    "ghbaseurl": "/oath",
+    "ghproject": "oath",
+    "version": "0.1.0",
+    "hasdownloads": true,
+    "description": "Oath is a tiny javascript library for [node](http://nodejs.org) and the browser that makes it easy to build and interact with promise/future based APIs."
+  },
+  "code": {
+    "index": {
+      "title": "lib/oath.js",
+      "file": "../../lib/oath.js",
+      "description": "",
+      "github": "https://github.com/logicalparadox/oath/blob/master/lib/oath.js"
+    }
+  }
+}
