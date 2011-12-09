@@ -1,14 +1,14 @@
 {
   "author": "Jake Luer <jake@alogicalparadox.com>",
   "name": "oath",
-  "description": "Tiny promises / futures.",
+  "description": "Tiny promises / futures library to make writing api interations easy.",
   "version": "0.0.5",
-  "homepage": "http://logicalparadox.github.com/oath",
+  "homepage": "http://alogicalparadox.com/oath",
   "repository": {
     "type": "git",
     "url": "git://github.com/logicalparadox/oath.git"
   },
-  "main": "index",
+  "main": "./index",
   "scripts": {
     "test": "make test"
   },
