@@ -65,10 +65,9 @@ exports.version = '0.1.0';
  */
 
 function Oath (options) {
-  var self = this;
   options = options || {};
 
-  this._pending = [];
+  this._pending = {};
   this._oath = {
       complete: false
     , parent: options.parent || null
@@ -88,8 +87,9 @@ function Oath (options) {
  * @param {Object} result
  * @api public
  */
+
 Oath.prototype.resolve = function (result) {
-  this._complete('resolve', result);
+  this._fulfill('resolve', result);
 };
 
 /**
@@ -104,8 +104,20 @@ Oath.prototype.resolve = function (result) {
  * @param {Object} result
  * @api public
  */
+
 Oath.prototype.reject = function (result) {
-  this._complete('reject', result);
+  this._fulfill('reject', result);
+};
+
+Oath.prototype.progress = function (result) {
+  var map = this._pending['progress'];
+
+  if (!map) return false;
+  else {
+    for (var i = 0; i < map.length; i++) {
+      map[i](result);
+    }
+  }
 };
 
 /**
@@ -124,72 +136,37 @@ Oath.prototype.reject = function (result) {
  */
 
 Oath.prototype.then = function (success, failure) {
-  var context = this._oath.context,
-      pending = { resolve: null, reject: null };
-
-  if (success)
-    pending.resolve = function () { success.apply(context, arguments); };
-
-  if (failure)
-    pending.reject = function () { failure.apply(context, arguments); };
-
-  this._pending.push(pending);
-
-  if (this._oath.complete)
-    this._traverse();
-
+  if (success) this._register('resolve', success);
+  if (failure) this._register('reject', failure);
+  if (this._oath.complete) this._traverse();
   return this;
 };
 
-/**
- * # .get(property)
- *
- * On `resolve`, will return `property` value from data
- * passed by oath. Subsequent `then` calls will have the
- * value of the `get` passed to them.
- *
- *      doSomething(my_data)
- *        .get('doctor')
- *          .then(function(doctor) { ... })
- *          .then(function(doctor) { ... });
- *
- * @name get
- * @param {String} property
- * @api public
- */
+Oath.prototype._register = function (type, fn) {
+  var context = this._oath.context
+    , map = this._pending[type]
+    , cb;
 
-Oath.prototype.get = function (property) {
-  var o = new Oath({ parent: this });
-  this.then(
-    function(value) { o.resolve(value[property]); },
-    function(value) { o.reject(value); }
-  );
-  return o;
-};
+  // For sync functions
+  if (fn.length < 2) {
+    cb = function (result) {
+      return fn.call(context, result);
+    };
 
-/**
- * # .pop()
- *
- * Return you to a parent oath if you have chained down.
- *
- *      doSomething(my_data)
- *        .get('doctor')
- *          .then(function(doctor) { ... })
- *          .pop()
- *        .then(function(my_data) { ... });
- *
- * @name pop
- * @api public
- */
+  // For async functions
+  } else if (fn.length == 2) {
+    cb = function (result, next) {
+      fn.call(context, result, next);
+    };
 
-Oath.prototype.pop = function () {
-  if (this._oath.parent) {
-    return this._oath.parent;
+  // WTF?
   } else {
-    return this;
+    throw new Error('Oath: Invalid function registered: to many parameters.');
   }
-};
 
+  if (!map) this._pending[type] = [ cb ];
+  else map.push(cb);
+};
 
 /**
  * # .call(functionName)
@@ -224,33 +201,55 @@ Oath.prototype.call = function (fn) {
 };
 
 /*!
- * # ._complete(type, result)
+ * # ._fulfill(type, result)
  *
  * Start the callback chain.
  *
- * @name complete
+ * @name fulfill
  * @param {String} type
  * @param {Object} result
  * @api private
  */
 
-Oath.prototype._complete = function (type, result) {
+Oath.prototype._fulfill = function (type, result) {
+  if (this._oath.complete) return false;
   this._oath.complete = {
       type: type
     , result: result
   };
+
   this._traverse();
 };
 
 Oath.prototype._traverse = function () {
-  var fn
-    , type = this._oath.complete.type
-    , result = this._oath.complete.result;
+  var self = this
+    , context = this._oath.context
+    , type = this._oath.complete.type;
 
-  while (this._pending[0]) {
-    fn = this._pending.shift()[type];
-    if (fn && 'function' === typeof fn) fn(result);
+  if (!this._pending[type]) {
+    return false;
   }
+
+  var iterate = function () {
+    var fn = self._pending[type].shift()
+      , result = self._oath.complete.result;
+
+    if (fn.length < 2) {
+      var res = fn(result);
+      if (res) self._oath.complete.result = res;
+      if (self._pending[type].length) iterate();
+    } else {
+      // async
+      var next = function (res) {
+        if (res) self._oath.complete.result = res;
+        if (self._pending[type].length) iterate();
+      }
+
+      fn(result, next);
+    }
+  }
+
+  iterate();
 };
 
   return exports;
