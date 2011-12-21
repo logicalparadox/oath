@@ -45,7 +45,7 @@ describe('Oath', function () {
       return o;
     };
 
-    promise({ doctor: 'who' }).then(success);
+    var h = promise({ doctor: 'who' }).then(success);
   });
 
   it('should execute a failure callback with arguments', function (done) {
@@ -137,27 +137,6 @@ describe('Oath', function () {
         }
       });
     }, 10);
-  });
-
-  it('should have a get helper with pop', function (done) {
-    var doctor = new oath(),
-        who, tardis, n=0;
-
-    doctor
-      .get('doctor')
-        .then(function(test) { who = test; })
-        .pop()
-      .then(function(data) { n++; tardis = { not: 'yet' }; })
-      .pop() // this shouldn't do anything
-      .then(function(data) { n++; tardis = data; });
-
-    setTimeout(function() {
-      doctor.resolve({ doctor: 'who' });
-      expect(n).to.equal(2);
-      expect(who).to.equal('who');
-      expect(tardis).to.eql({ doctor: 'who' });
-      done();
-    }, 0);
   });
 
   it('should execute items added to the chain after completion immediately', function (done) {
