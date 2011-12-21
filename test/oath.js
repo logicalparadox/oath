@@ -123,6 +123,53 @@ describe('Oath', function () {
     promise({ doctor: 'who' }).then(success, failure);
   });
 
+  it('should execute async function in order', function (done) {
+    var f1c = false
+      , f2c = false;
+    var f1 = function (res, next) {
+      setTimeout(function() {
+        expect(res).to.exist
+          .and.to.have.property('doctor', 'who');
+        expect(res).to.not.have.property('method');
+        expect(res).to.not.have.property('companion');
+        expect(next).to.be.a('function');
+        expect(f1c).to.be.false;
+        expect(f2c).to.be.false;
+        f1c = true;
+        res.method = 'tardis';
+        next(res);
+      }, 10);
+    };
+
+    var f2 = function (res) {
+      expect(res).to.exist
+        .and.to.have.property('doctor', 'who');
+      expect(res).to.have.property('method', 'tardis');
+      expect(f1c).to.be.true;
+      expect(f2c).to.be.false;
+      f2c = true;
+      res.companion = 'k-9';
+      return res;
+    };
+
+    var traveller = new oath();
+
+    traveller
+      .then(f1)
+      .then(f2)
+      .then(function(res) {
+        expect(f1c).to.be.true;
+        expect(f2c).to.be.true;
+        expect(res).to.eql(
+          { doctor: 'who'
+          , method: 'tardis'
+          , companion: 'k-9' });
+        done();
+      });
+
+    traveller.resolve({ doctor: 'who' });
+  });
+
   it('should have a call helper', function (done) {
     var doctor = new oath();
 
@@ -130,16 +177,19 @@ describe('Oath', function () {
       .call('who', { time: 'lord' });
 
     setTimeout(function() {
-      doctor.resolve({
-        who: function(data) {
-          expect(data).to.eql({ time: 'lord' });
-          done();
+      doctor.resolve(
+        { doctor: 'who'
+        , who: function(data) {
+            expect(data).to.eql({ time: 'lord' });
+            expect(this).to.have.property('doctor', 'who');
+            done();
+          }
         }
-      });
+      );
     }, 10);
   });
 
-  it('should execute items added to the chain after completion immediately', function (done) {
+  it('should execute items added to the chain after completion immediately', function () {
     var doctor = new oath()
       , n = 0;
 
@@ -154,12 +204,32 @@ describe('Oath', function () {
     }
 
     doctor.then(depart);
-
     doctor.resolve();
-
     doctor.then(arrive);
 
     expect(n).to.equal(2);
-    done();
+  });
+
+  it('should exectute items added to the chain after async fulfillment', function (done) {
+    var doctor = new oath()
+      , n = 0;
+
+    var depart = function (res, next) {
+      setTimeout(function () {
+        expect(n).to.equal(0);
+        next();
+      }, 30);
+      n++;
+    }
+
+    var arrive = function () {
+      expect(n).to.equal(1);
+      n++;
+      done();
+    }
+
+    doctor.then(depart);
+    doctor.resolve();
+    doctor.then(arrive);
   });
 });
