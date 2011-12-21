@@ -68,44 +68,45 @@ function Oath (options) {
   var self = this;
   options = options || {};
 
-  this.pending = [];
-  this._options = {
-    parent: options.parent || null,
-    context: options.context || this
-  };
-
-  /**
-   * ## Oath.resolve(result)
-   *
-   * Emits completion event to execute `success` chain of functions.
-   *
-   *        // When async work is complete
-   *        promise.resolve(my_data_obj);
-   *
-   * @name Oath.resolve
-   * @param {Object} result
-   * @api public
-   */
-  this.resolve = function (result) {
-    self._complete('resolve', result);
-  };
-
-  /**
-   * ## Oath.reject(result)
-   *
-   * Emit completion event to execute `failure` chain of functions.
-   *
-   *        // When async work errors
-   *        promise.reject(my_error_obj);
-   *
-   * @name Oath.reject
-   * @param {Object} result
-   * @api public
-   */
-  this.reject = function (result) {
-    self._complete('reject', result);
+  this._pending = [];
+  this._oath = {
+      complete: false
+    , parent: options.parent || null
+    , context: options.context || this
   };
 }
+
+/**
+ * # Oath.resolve(result)
+ *
+ * Emits completion event to execute `success` chain of functions.
+ *
+ *        // When async work is complete
+ *        promise.resolve(my_data_obj);
+ *
+ * @name Oath.resolve
+ * @param {Object} result
+ * @api public
+ */
+Oath.prototype.resolve = function (result) {
+  this._complete('resolve', result);
+};
+
+/**
+ * # Oath.reject(result)
+ *
+ * Emit completion event to execute `failure` chain of functions.
+ *
+ *        // When async work errors
+ *        promise.reject(my_error_obj);
+ *
+ * @name Oath.reject
+ * @param {Object} result
+ * @api public
+ */
+Oath.prototype.reject = function (result) {
+  this._complete('reject', result);
+};
 
 /**
  * # .then([success], [failure])
@@ -123,7 +124,7 @@ function Oath (options) {
  */
 
 Oath.prototype.then = function (success, failure) {
-  var context = this._options.context,
+  var context = this._oath.context,
       pending = { resolve: null, reject: null };
 
   if (success)
@@ -132,7 +133,10 @@ Oath.prototype.then = function (success, failure) {
   if (failure)
     pending.reject = function () { failure.apply(context, arguments); };
 
-  this.pending.push(pending);
+  this._pending.push(pending);
+
+  if (this._oath.complete)
+    this._traverse();
 
   return this;
 };
@@ -179,8 +183,8 @@ Oath.prototype.get = function (property) {
  */
 
 Oath.prototype.pop = function () {
-  if (this._options.parent) {
-    return this._options.parent;
+  if (this._oath.parent) {
+    return this._oath.parent;
   } else {
     return this;
   }
@@ -231,9 +235,20 @@ Oath.prototype.call = function (fn) {
  */
 
 Oath.prototype._complete = function (type, result) {
-  var fn;
-  while (this.pending[0]) {
-    fn = this.pending.shift()[type];
+  this._oath.complete = {
+      type: type
+    , result: result
+  };
+  this._traverse();
+};
+
+Oath.prototype._traverse = function () {
+  var fn
+    , type = this._oath.complete.type
+    , result = this._oath.complete.result;
+
+  while (this._pending[0]) {
+    fn = this._pending.shift()[type];
     if (fn && 'function' === typeof fn) fn(result);
   }
 };
