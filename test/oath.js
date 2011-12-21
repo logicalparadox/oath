@@ -1,8 +1,10 @@
-var expect = require('chai').expect;
+if (!chai)
+  var chai = require('chai');
 
-if (!oath) {
+var expect = chai.expect;
+
+if (!oath)
   var oath = require('..');
-}
 
 function Spy (fn) {
   if (!fn) fn = function() {};
@@ -156,5 +158,29 @@ describe('Oath', function () {
       expect(tardis).to.eql({ doctor: 'who' });
       done();
     }, 0);
+  });
+
+  it('should execute items added to the chain after completion immediately', function (done) {
+    var doctor = new oath()
+      , n = 0;
+
+    var depart = function () {
+      expect(n).to.equal(0);
+      n++;
+    }
+
+    var arrive = function () {
+      expect(n).to.equal(1);
+      n++;
+    }
+
+    doctor.then(depart);
+
+    doctor.resolve();
+
+    doctor.then(arrive);
+
+    expect(n).to.equal(2);
+    done();
   });
 });
