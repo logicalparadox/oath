@@ -11,6 +11,12 @@ A future (or promise), is an alternative method to callbacks when working with a
 code. For more information check out the very information Wikipedia article
 on [Futures and Promises](http://en.wikipedia.org/wiki/Futures_and_promises).
 
+## About version 0.2.x
+
+Version 0.2.x and the master branch represent a shift in oath's core fucus. Instead of providing helper
+functions for manipulating the result set and deep chaining, this version allows you to manipulate the
+result set directly, and provides helpers if this is to be done asyncronously. Docs coming shortly.
+
 ## Installation
 
 Oath is available for both server-side and the browser.
@@ -30,7 +36,7 @@ Download the package and include either the normal or minimized build in your HT
 
 ## Help, resources, and issues?
 
-* The annotated source / full API documentation is available at [alogicalparadox.com/oath](http://alogicalparadox.com/oath/).
+* The annotated source / full API documentation for versions 0.1.x is available at [alogicalparadox.com/oath](http://alogicalparadox.com/oath/).
 * If you have questions or issues, please use this projects [Github Issues](https://github.com/logicalparadox/oath/issues).
 
 ## Contributors
