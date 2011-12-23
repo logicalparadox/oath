@@ -42,7 +42,7 @@ describe('Oath', function () {
         expect(success.calls).to.have.length(1);
         done()
       }, 10);
-      return o;
+      return o.promise;
     };
 
     var h = promise({ doctor: 'who' }).then(success);
@@ -61,7 +61,7 @@ describe('Oath', function () {
         expect(failure.calls).to.have.length(1);
         done()
       }, 10);
-      return o;
+      return o.promise;
     };
 
     promise({ doctor: 'who' }).then(null, failure);
@@ -89,7 +89,7 @@ describe('Oath', function () {
       setTimeout(function() {
         o.reject(data);
       }, 20);
-      return o;
+      return o.promise;
     };
 
     promise({ doctor: 'who' }).then(success, failure);
@@ -117,7 +117,7 @@ describe('Oath', function () {
       setTimeout(function() {
         o.resolve(data);
       }, 20);
-      return o;
+      return o.promise;
     };
 
     promise({ doctor: 'who' }).then(success, failure);
@@ -152,9 +152,15 @@ describe('Oath', function () {
       return res;
     };
 
-    var traveller = new oath();
+    var traveller = function() {
+      var o = new oath();
+      setTimeout(function() {
+        o.resolve({ doctor: 'who' });
+      }, 5);
+      return o.promise;
+    };
 
-    traveller
+    traveller()
       .then(f1)
       .then(f2)
       .then(function(res) {
@@ -166,27 +172,6 @@ describe('Oath', function () {
           , companion: 'k-9' });
         done();
       });
-
-    traveller.resolve({ doctor: 'who' });
-  });
-
-  it('should have a call helper', function (done) {
-    var doctor = new oath();
-
-    doctor
-      .call('who', { time: 'lord' });
-
-    setTimeout(function() {
-      doctor.resolve(
-        { doctor: 'who'
-        , who: function(data) {
-            expect(data).to.eql({ time: 'lord' });
-            expect(this).to.have.property('doctor', 'who');
-            done();
-          }
-        }
-      );
-    }, 10);
   });
 
   it('should execute items added to the chain after completion immediately', function () {
@@ -203,9 +188,9 @@ describe('Oath', function () {
       n++;
     }
 
-    doctor.then(depart);
+    doctor.promise.then(depart);
     doctor.resolve();
-    doctor.then(arrive);
+    doctor.promise.then(arrive);
 
     expect(n).to.equal(2);
   });
@@ -228,8 +213,8 @@ describe('Oath', function () {
       done();
     }
 
-    doctor.then(depart);
+    doctor.promise.then(depart);
     doctor.resolve();
-    doctor.then(arrive);
+    doctor.promise.then(arrive);
   });
 });
