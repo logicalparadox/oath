@@ -70,8 +70,21 @@ function Oath (options) {
   this._pending = {};
   this._oath = {
       complete: false
-    , parent: options.parent || null
     , context: options.context || this
+  };
+
+  var self = this;
+  this.promise = {
+      then: function (success, failure) {
+        if (success) self._register('resolve', success);
+        if (failure) self._register('reject', failure);
+        if (self._oath.complete) self._traverse();
+        return this;
+      }
+    , onprogress: function (fn) {
+        self._register('progress', fn);
+        return this;
+      }
   };
 }
 
@@ -109,6 +122,16 @@ Oath.prototype.reject = function (result) {
   this._fulfill('reject', result);
 };
 
+/**
+ * # Oath.progress(current, max)
+ *
+ * Emits the current progress to the the progress stack of functions.
+ *
+ * @name Oath.progress
+ * @param {Object} result
+ * @api public
+ */
+
 Oath.prototype.progress = function (result) {
   var map = this._pending['progress'];
 
@@ -135,12 +158,7 @@ Oath.prototype.progress = function (result) {
  * @api public
  */
 
-Oath.prototype.then = function (success, failure) {
-  if (success) this._register('resolve', success);
-  if (failure) this._register('reject', failure);
-  if (this._oath.complete) this._traverse();
-  return this;
-};
+//Oath.prototype.then =
 
 Oath.prototype._register = function (type, fn) {
   var context = this._oath.context
@@ -161,49 +179,18 @@ Oath.prototype._register = function (type, fn) {
 
   // WTF?
   } else {
-    throw new Error('Oath: Invalid function registered: to many parameters.');
+    throw new Error('Oath: Invalid function registered - to many parameters.');
   }
 
   if (!map) this._pending[type] = [ cb ];
   else map.push(cb);
 };
 
-/**
- * # .call(functionName)
- *
- * On `resolve`, will execute a function of `name` in the
- * result object. The function that is called will be passed
- * all subseqents parameters of `oath.call`. The context of
- * `this` in the function that is called will be equal to the
- * `result` object passed on `oath.resolve`.
- *
- *      // queue up call on complete
- *      oath.call('validate', '1234');
- *
- *      oath.resolve({ some: 'data'
- *        , validate: function (apiKey) {
- *            this.some == 'data';
- *            apiKey == '1234';
- *            ...
- *          }
- *        });
- *
- * @name call
- * @param {String} function name
- * @api public
- */
-
-Oath.prototype.call = function (fn) {
-  var args = arguments;
-  return this.then(function(value) {
-    return value[fn].apply(value, Array.prototype.slice.call(args, 1));
-  });
-};
-
 /*!
  * # ._fulfill(type, result)
  *
- * Start the callback chain.
+ * Check to see if the results have been posted,
+ * and if not, store results and start callback chain.
  *
  * @name fulfill
  * @param {String} type
@@ -217,9 +204,19 @@ Oath.prototype._fulfill = function (type, result) {
       type: type
     , result: result
   };
-
   this._traverse();
 };
+
+/*!
+ * # ._traverse()
+ *
+ * Iterate through the callback stack and execute
+ * functions serially. Provide next helper to async
+ * functions and handle result reassignment.
+ *
+ * @name traverse
+ * @api private
+ */
 
 Oath.prototype._traverse = function () {
   var self = this
@@ -233,18 +230,15 @@ Oath.prototype._traverse = function () {
   var iterate = function () {
     var fn = self._pending[type].shift()
       , result = self._oath.complete.result;
-
     if (fn.length < 2) {
       var res = fn(result);
       if (res) self._oath.complete.result = res;
       if (self._pending[type].length) iterate();
     } else {
-      // async
       var next = function (res) {
         if (res) self._oath.complete.result = res;
         if (self._pending[type].length) iterate();
       }
-
       fn(result, next);
     }
   }
