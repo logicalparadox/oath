@@ -42,10 +42,10 @@ describe('Oath', function () {
         expect(success.calls).to.have.length(1);
         done()
       }, 10);
-      return o;
+      return o.promise;
     };
 
-    promise({ doctor: 'who' }).then(success);
+    var h = promise({ doctor: 'who' }).then(success);
   });
 
   it('should execute a failure callback with arguments', function (done) {
@@ -61,7 +61,7 @@ describe('Oath', function () {
         expect(failure.calls).to.have.length(1);
         done()
       }, 10);
-      return o;
+      return o.promise;
     };
 
     promise({ doctor: 'who' }).then(null, failure);
@@ -89,7 +89,7 @@ describe('Oath', function () {
       setTimeout(function() {
         o.reject(data);
       }, 20);
-      return o;
+      return o.promise;
     };
 
     promise({ doctor: 'who' }).then(success, failure);
@@ -117,50 +117,64 @@ describe('Oath', function () {
       setTimeout(function() {
         o.resolve(data);
       }, 20);
-      return o;
+      return o.promise;
     };
 
     promise({ doctor: 'who' }).then(success, failure);
   });
 
-  it('should have a call helper', function (done) {
-    var doctor = new oath();
+  it('should execute async function in order', function (done) {
+    var f1c = false
+      , f2c = false;
+    var f1 = function (res, next) {
+      setTimeout(function() {
+        expect(res).to.exist
+          .and.to.have.property('doctor', 'who');
+        expect(res).to.not.have.property('method');
+        expect(res).to.not.have.property('companion');
+        expect(next).to.be.a('function');
+        expect(f1c).to.be.false;
+        expect(f2c).to.be.false;
+        f1c = true;
+        res.method = 'tardis';
+        next(res);
+      }, 10);
+    };
 
-    doctor
-      .call('who', { time: 'lord' });
+    var f2 = function (res) {
+      expect(res).to.exist
+        .and.to.have.property('doctor', 'who');
+      expect(res).to.have.property('method', 'tardis');
+      expect(f1c).to.be.true;
+      expect(f2c).to.be.false;
+      f2c = true;
+      res.companion = 'k-9';
+      return res;
+    };
 
-    setTimeout(function() {
-      doctor.resolve({
-        who: function(data) {
-          expect(data).to.eql({ time: 'lord' });
-          done();
-        }
+    var traveller = function() {
+      var o = new oath();
+      setTimeout(function() {
+        o.resolve({ doctor: 'who' });
+      }, 5);
+      return o.promise;
+    };
+
+    traveller()
+      .then(f1)
+      .then(f2)
+      .then(function(res) {
+        expect(f1c).to.be.true;
+        expect(f2c).to.be.true;
+        expect(res).to.eql(
+          { doctor: 'who'
+          , method: 'tardis'
+          , companion: 'k-9' });
+        done();
       });
-    }, 10);
   });
 
-  it('should have a get helper with pop', function (done) {
-    var doctor = new oath(),
-        who, tardis, n=0;
-
-    doctor
-      .get('doctor')
-        .then(function(test) { who = test; })
-        .pop()
-      .then(function(data) { n++; tardis = { not: 'yet' }; })
-      .pop() // this shouldn't do anything
-      .then(function(data) { n++; tardis = data; });
-
-    setTimeout(function() {
-      doctor.resolve({ doctor: 'who' });
-      expect(n).to.equal(2);
-      expect(who).to.equal('who');
-      expect(tardis).to.eql({ doctor: 'who' });
-      done();
-    }, 0);
-  });
-
-  it('should execute items added to the chain after completion immediately', function (done) {
+  it('should execute items added to the chain after completion immediately', function () {
     var doctor = new oath()
       , n = 0;
 
@@ -174,13 +188,33 @@ describe('Oath', function () {
       n++;
     }
 
-    doctor.then(depart);
-
+    doctor.promise.then(depart);
     doctor.resolve();
-
-    doctor.then(arrive);
+    doctor.promise.then(arrive);
 
     expect(n).to.equal(2);
-    done();
+  });
+
+  it('should exectute items added to the chain after async fulfillment', function (done) {
+    var doctor = new oath()
+      , n = 0;
+
+    var depart = function (res, next) {
+      setTimeout(function () {
+        expect(n).to.equal(0);
+        next();
+      }, 30);
+      n++;
+    }
+
+    var arrive = function () {
+      expect(n).to.equal(1);
+      n++;
+      done();
+    }
+
+    doctor.promise.then(depart);
+    doctor.resolve();
+    doctor.promise.then(arrive);
   });
 });
