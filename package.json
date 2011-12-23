@@ -2,7 +2,7 @@
   "author": "Jake Luer <jake@alogicalparadox.com>",
   "name": "oath",
   "description": "Tiny library for node and the browser that makes it easy to build and interact with promise/future based APIs.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "http://alogicalparadox.com/oath",
   "repository": {
     "type": "git",
