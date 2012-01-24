@@ -95,6 +95,42 @@ describe('Oath', function () {
     promise({ doctor: 'who' }).then(success, failure);
   });
 
+  it('should accept the node callback converter - success', function (done) {
+    var success = Spy(function (err, data) {
+      expect(err).to.not.exist;
+      expect(data).to.eql({ doctor: 'who' });
+      done();
+    });
+
+    var promise = function (data) {
+      var o = new oath();
+      setTimeout(function() {
+        o.resolve(data);
+      }, 20);
+      return o.promise;
+    };
+
+    promise({ doctor: 'who' }).node(success);
+  });
+
+  it('should accept the node callback converter - failure', function (done) {
+    var failure = Spy(function (err, data) {
+      expect(err).to.be.instanceof(Error);
+      expect(data).to.not.exist;
+      done();
+    });
+
+    var promise = function (data) {
+      var o = new oath();
+      setTimeout(function() {
+        o.reject(new Error('Fake Error'));
+      }, 20);
+      return o.promise;
+    };
+
+    promise({ doctore: 'who' }).node(failure);
+  });
+
   it('should not call the success stack on failure', function (done) {
     var success = Spy(function (data) {
       expect(true).to.not.be.ok;

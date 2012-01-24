@@ -85,6 +85,13 @@ function Oath (options) {
         self._register('progress', fn);
         return this;
       }
+    , node: function (callback) {
+        this.then(
+            function (d) { callback(null, d); }
+          , function (e) { callback(e); }
+        );
+        return this;
+      }
   };
 }
 
@@ -245,6 +252,7 @@ Oath.prototype._traverse = function () {
 
   iterate();
 };
+
 
   return exports;
 });
