@@ -1,4 +1,11 @@
 
+0.2.1 / 2012-01-23 
+==================
+
+  * tests for node callback helper
+  * add node callback helper
+  * vim ignore(s)
+
 0.2.0 / 2011-12-23
 ==================
 
