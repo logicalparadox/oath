@@ -253,4 +253,49 @@ describe('Oath', function () {
     doctor.resolve();
     doctor.promise.then(arrive);
   });
+
+  describe('internal node callback helper', function (done) {
+    it('should work on failure', function (done) {
+      var doctor = new oath();
+
+      var success = function (a, b) {
+        expect(true).to.be.false;
+      }
+
+      var failure = function (e) {
+        expect(e).to.be.instanceof(Error);
+        expect(arguments).to.have.length(1);
+        done();
+      }
+
+      function depart (some, cb) {
+        cb(new Error('No companion aboard. Dont leave!'));
+      }
+
+      doctor.promise.then(success, failure);
+      depart('now', doctor.node());
+    });
+
+    it('should work on success', function (done) {
+      var doctor = new oath();
+
+      var success = function (res) {
+        expect(arguments).to.have.length(1);
+        expect(res).to.be.instanceof(Array);
+        expect(res).to.eql([ 'k9', 'sj' ]);
+        done();
+      }
+
+      var failure = function (e) {
+        expect(false).to.be.true;
+      }
+
+      function depart (some, cb) {
+        cb(null, ['k9', 'sj' ]);
+      }
+
+      doctor.promise.then(success, failure);
+      depart('now', doctor.node());
+    });
+  });
 });
