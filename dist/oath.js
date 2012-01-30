@@ -75,9 +75,10 @@ function Oath (options) {
 
   var self = this;
   this.promise = {
-      then: function (success, failure) {
+      then: function (success, failure, progress) {
         if (success) self._register('resolve', success);
         if (failure) self._register('reject', failure);
+        if (progress) self._register('progress', progress);
         if (self._oath.complete) self._traverse();
         return this;
       }
