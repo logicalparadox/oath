@@ -1,4 +1,10 @@
 
+0.2.3 / 2012-01-30 
+==================
+
+  * added internal api Oath#node as helper for quick reject/resolve with node style callbacks
+  * changed test reporter
+
 0.2.2 / 2012-01-29 
 ==================
 

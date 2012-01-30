@@ -25,7 +25,7 @@ var exports = module.exports = Oath;
 /*!
  * oath version
  */
-exports.version = '0.2.2';
+exports.version = '0.2.3';
 
 /**
  * # Oath constructor
@@ -148,6 +148,30 @@ Oath.prototype.progress = function (result) {
     for (var i = 0; i < map.length; i++) {
       map[i](result);
     }
+  }
+};
+
+/**
+ * # Oath.node(err, [...])
+ *
+ * Provides a node-able function...
+ * Works, provided the expectation is that
+ * if there was an error, it will be returned
+ * as the first argument.
+ *
+ *    var oath = new Oath();
+ *    fs.mkdir(dir, oath.node());
+ *
+ * @name Oath.node
+ * @return {Function} expection function (err, data) { ...
+ */
+
+Oath.prototype.node = function () {
+  var self = this;
+  return function () {
+    if (arguments[0]) return self.reject(arguments[0]);
+    var args = Array.prototype.slice.call(arguments, 1, arguments.length)
+    self.resolve.apply(self, args);
   }
 };
 
