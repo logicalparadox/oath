@@ -1,6 +1,6 @@
 
 TESTS = test/*.js
-REPORTER = dot
+REPORTER = spec
 
 all:
 	@node support/compile
