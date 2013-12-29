@@ -1,8 +1,8 @@
 {
-  "author": "Jake Luer <jake@alogicalparadox.com>",
   "name": "oath",
-  "description": "Tiny library for node and the browser that makes it easy to build and interact with promise/future based APIs.",
   "version": "0.2.3",
+  "description": "Tiny library for node and the browser that makes it easy to build and interact with promise/future based APIs.",
+  "author": "Jake Luer <jake@alogicalparadox.com>",
   "homepage": "http://alogicalparadox.com/oath",
   "repository": {
     "type": "git",
@@ -10,15 +10,14 @@
   },
   "main": "./index",
   "scripts": {
-    "test": "make test"
+    "test": "node_modules/goodwin/bin/goodwin"
   },
   "engines": {
-    "node": ">= 0.4.8"
+    "node": ">= 0.8.0"
   },
   "dependencies": {},
   "devDependencies": {
-    "mocha": "*",
-    "chai": "*",
-    "folio": "0.1.x"
+    "goodwin": "https://github.com/logicalparadox/goodwin/tarball/master",
+    "co": "~3.0.1"
   }
 }
