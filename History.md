@@ -1,4 +1,15 @@
 
+1.0.0 / 2013-12-29 
+==================
+
+ * pkg/docs: update description
+ * travis: no nextgen node
+ * Merge branch 'refactor/thunks'
+ * ignore: modern
+ * travis: modern node
+ * code cleanup
+ * rewrite as thunks
+
 0.2.3 / 2012-01-30 
 ==================
 

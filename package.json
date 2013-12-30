@@ -1,7 +1,7 @@
 {
   "name": "oath",
-  "version": "0.2.3",
-  "description": "Tiny library for node and the browser that makes it easy to build and interact with promise/future based APIs.",
+  "version": "1.0.0",
+  "description": "Thunk-based flow control with fallback support for callbacks.",
   "author": "Jake Luer <jake@alogicalparadox.com>",
   "homepage": "http://alogicalparadox.com/oath",
   "repository": {
@@ -19,7 +19,7 @@
     "simple-assert": "~1.0.0"
   },
   "devDependencies": {
-    "goodwin": "https://github.com/logicalparadox/goodwin/tarball/master",
-    "co": "~3.0.1"
+    "co": "~3.0.1",
+    "goodwin": "https://github.com/logicalparadox/goodwin/tarball/master"
   }
 }
