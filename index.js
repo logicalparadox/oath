@@ -4,255 +4,186 @@
  * MIT Licensed
  */
 
-module.exports = Oath;
+/*!
+ * Module dependencies
+ */
+
+var assert = require('simple-assert');
+
+/*!
+ * Primary exports
+ */
+
+var exports = module.exports = createThunk;
 
 /**
- * # Oath constructor
+ * ### thunk(cb, [ctx])
  *
- * Create a new promise.
+ * Create a thunk that can later be "completed".
  *
- * #### Options
+ * ```js
+ * function async(cb) {
+ *  var done = thunk(cb);
+ *  setImmediate(done);
+ *  return done.thunk;
+ * }
  *
- * * parent - used internally for chaining
- * * context - object to set as `this` in callbacks
+ * var res = async(next);
+ * res(alsoNext);
+ * ```
  *
- * You can use `Oath` within single functions
- *
- *      // assignment style
- *      var promise = new oath();
- *      promise.then(successFn, errorFn);
- *      myAsycFunction(function(err, result) {
- *        if (err) promise.reject(err);
- *        promise.resolve(result);
- *      });
- *
- * Or return them to ease chaining of callbacks
- *
- *      // return style
- *      function doSomething(data) {
- *        var promise = new oath();
- *        // async stuff here
- *        // promise should be returned immediately
- *        return promise;
- *      }
- *
- *      doSomething(data).then(successFn, errorFn);
- *
- * @name constructor
- * @param {Object} options
+ * @param {Function} first callback
+ * @param {Object} context to invoke callback(s) with
+ * @return {Function} completed handle
  * @api public
  */
 
-function Oath (options) {
-  options = options || {};
+function createThunk(cb, ctx) {
+  var t = {};
+  t.ctx = ctx || null;
+  t.res = null;
 
-  this._pending = {};
-  this._oath = {
-      complete: false
-    , context: options.context || this
+  t.progress = { total: null, complete: null };
+
+  t.listeners = {
+    complete: [],
+    error: [],
+    progress: []
   };
 
-  var self = this;
-  this.promise = {
-      then: function (success, failure, progress) {
-        if (success) self._register('resolve', success);
-        if (failure) self._register('reject', failure);
-        if (progress) self._register('progress', progress);
-        if (self._oath.complete) self._traverse();
-        return this;
+  /*!
+   * Scoped `.call` for invoke the callback chain.
+   * Returns a function that is to be called with
+   * an `{Array}` of callbacks to invoke.
+   *
+   * @param {Object} store
+   * @return {Function}
+   * @api private
+   */
+
+  var call = (function(t) {
+    return function call(fns) {
+      for(var i = 0; i < fns.length; i++) {
+        fns[i].apply(t.ctx, t.res);
       }
-    , onprogress: function (fn) {
-        self._register('progress', fn);
-        return this;
+    };
+  })(t);
+
+  /**
+   * #### done(err, [...])
+   *
+   * The function returned from `thunk` signals
+   * the completion of the thunk and is to be used
+   * within the async function that the thunk represents.
+   *
+   * @param {Error|null} if error
+   * @param {Mixed} repeatable result
+   * @api public
+   */
+
+  var done = (function(t) {
+    return function thunk() {
+      assert(!Array.isArray(t.res), 'thunk has already completed');
+      var argv = t.res = [].slice.call(arguments);
+      var q = argv[0] ? t.listeners.error : t.listeners.complete;
+      return call(q);
+    };
+  })(t);
+
+  done.progress = (function(t) {
+    return function(total, current) {
+      t.progess = { total: total, current: current };
+      call(t.listeners.progress);
+      return this;
+    }
+  })(t);
+
+  /**
+   * #### done.thunk(cb)
+   *
+   * This method is used to stack callbacks
+   * for invocation upon completion. A function/method
+   * implementing thunks should return this function.
+   *
+   * @param {Function} callback to add to stack
+   * @api public
+   */
+
+  done.thunk = (function(t) {
+    function addListener(ev, fn) {
+      assert(~[ 'error', 'complete', 'progress' ].indexOf(ev), 'invalid event listener key');
+      assert('function' === typeof fn, 'invalid event listener callback');
+      t.listeners[ev].push(fn);
+    }
+
+    function Oath(fn) {
+      if (!fn) return Oath;
+
+      if (Array.isArray(t.res)) {
+        assert('function' === typeof fn, 'invalid event listener callback');
+        call([ fn ]);
+      } else {
+        addListener('complete', fn);
+        addListener('error', fn);
       }
-    , node: function (callback) {
-        this.then(
-            function (d) { callback(null, d); }
-          , function (e) { callback(e); }
-        );
-        return this;
-      }
-  };
+
+      return Oath;
+    }
+
+    Object.defineProperty(Oath, 'progress', {
+      get: function() { return t.progress; }
+    });
+
+    Object.defineProperty(Oath, 'onerror', {
+      set: function(fn) { addListener('error', fn); }
+    });
+
+    Object.defineProperty(Oath, 'oncomplete', {
+      set: function(fn) { addListener('complete', fn); }
+    });
+
+    Object.defineProperty(Oath, 'onprogress', {
+      set: function(fn) { addListener('progress', fn); }
+    });
+
+    return Oath;
+  })(t);
+
+  if (cb) done.thunk(cb);
+  return done;
 }
 
 /**
- * # Oath.resolve(result)
+ * ### thunk.wrap(method, [source context], [target context])
  *
- * Emits completion event to execute `success` chain of functions.
+ * Convert a node-compatible standard async function
+ * to a thunk-style function.
  *
- *        // When async work is complete
- *        promise.resolve(my_data_obj);
+ * ```js
+ * // no context required
+ * var read = thunk.wrap(fs.read);
  *
- * @name Oath.resolve
- * @param {Object} result
+ * // contexts required
+ * function Server() {
+ *   var serv = this._handle = http.createServer();
+ *   this.listen = thunk.wrap(serv.listen, serv, this);
+ * }
+ * ```
+ *
+ * @param {Function} function or method
+ * @param {Mixed} source context (for method)
+ * @param {Mixed} target context (for callbacks)
+ * @return {Function} add callback to stack
  * @api public
  */
 
-Oath.prototype.resolve = function (result) {
-  this._fulfill('resolve', result);
-};
-
-/**
- * # Oath.reject(result)
- *
- * Emit completion event to execute `failure` chain of functions.
- *
- *        // When async work errors
- *        promise.reject(my_error_obj);
- *
- * @name Oath.reject
- * @param {Object} result
- * @api public
- */
-
-Oath.prototype.reject = function (result) {
-  this._fulfill('reject', result);
-};
-
-/**
- * # Oath.progress(current, max)
- *
- * Emits the current progress to the the progress stack of functions.
- *
- * @name Oath.progress
- * @param {Object} result
- * @api public
- */
-
-Oath.prototype.progress = function (result) {
-  var map = this._pending['progress'];
-
-  if (!map) return false;
-  else {
-    for (var i = 0; i < map.length; i++) {
-      map[i](result);
-    }
-  }
-};
-
-/**
- * # Oath.node(err, [...])
- *
- * Provides a node-able function...
- * Works, provided the expectation is that
- * if there was an error, it will be returned
- * as the first argument.
- *
- *    var oath = new Oath();
- *    fs.mkdir(dir, oath.node());
- *
- * @name Oath.node
- * @return {Function} expection function (err, data) { ...
- */
-
-Oath.prototype.node = function () {
-  var self = this;
-  return function () {
-    if (arguments[0]) return self.reject(arguments[0]);
-    var args = Array.prototype.slice.call(arguments, 1, arguments.length)
-    self.resolve.apply(self, args);
-  }
-};
-
-/**
- * # .then([success], [failure])
- *
- * Chainable function for promise observers to queue result functions.
- *
- *      doSomething(my_data)
- *        .then(successFn1, failureFn1)
- *        .then(successFn2, failureFn2)
- *
- * @name then
- * @param {Function} success will execute on `resolve`
- * @param {Function} failure will execute on `reject` (optional)
- * @api public
- */
-
-//Oath.prototype.then =
-
-Oath.prototype._register = function (type, fn) {
-  var context = this._oath.context
-    , map = this._pending[type]
-    , cb;
-
-  // For sync functions
-  if (fn.length < 2) {
-    cb = function (result) {
-      return fn.call(context, result);
-    };
-
-  // For async functions
-  } else if (fn.length == 2) {
-    cb = function (result, next) {
-      fn.call(context, result, next);
-    };
-
-  // WTF?
-  } else {
-    throw new Error('Oath: Invalid function registered - to many parameters.');
-  }
-
-  if (!map) this._pending[type] = [ cb ];
-  else map.push(cb);
-};
-
-/*!
- * # ._fulfill(type, result)
- *
- * Check to see if the results have been posted,
- * and if not, store results and start callback chain.
- *
- * @name fulfill
- * @param {String} type
- * @param {Object} result
- * @api private
- */
-
-Oath.prototype._fulfill = function (type, result) {
-  if (this._oath.complete) return false;
-  this._oath.complete = {
-      type: type
-    , result: result
+exports.wrap = function(method, sctx, tctx) {
+  return function() {
+    var argv = [].slice.call(arguments);
+    var done = createThunk(null, tctx);
+    argv[argv.length] = done;
+    sctx = sctx || null;
+    method.apply(sctx, argv);
+    return done.thunk;
   };
-  this._traverse();
-};
-
-/*!
- * # ._traverse()
- *
- * Iterate through the callback stack and execute
- * functions serially. Provide next helper to async
- * functions and handle result reassignment.
- *
- * @name traverse
- * @api private
- */
-
-Oath.prototype._traverse = function () {
-  var self = this
-    , context = this._oath.context
-    , type = this._oath.complete.type;
-
-  if (!this._pending[type]) {
-    return false;
-  }
-
-  var iterate = function () {
-    var fn = self._pending[type].shift()
-      , result = self._oath.complete.result;
-    if (fn.length < 2) {
-      var res = fn(result);
-      if (res) self._oath.complete.result = res;
-      if (self._pending[type].length) iterate();
-    } else {
-      var next = function (res) {
-        if (res) self._oath.complete.result = res;
-        if (self._pending[type].length) iterate();
-      }
-      fn(result, next);
-    }
-  }
-
-  iterate();
 };
