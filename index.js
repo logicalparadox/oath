@@ -39,16 +39,11 @@ var exports = module.exports = createThunk;
  */
 
 function createThunk(cb, ctx) {
-  var t = {};
-  t.ctx = ctx || null;
-  t.res = null;
-
-  t.progress = { total: null, complete: null };
-
-  t.listeners = {
-    complete: [],
-    error: [],
-    progress: []
+  var t = {
+    ctx: ctx || null,
+    res: null,
+    progress: { total: null, complete: null },
+    listeners: { complete: [], error: [], progress: [] }
   };
 
   /*!
