@@ -15,6 +15,13 @@ test('oath()', function() {
   assert('function' === typeof t.thunk(function() {}));
 });
 
+test('oath(obj, str', function() {
+  var obj = { stub: function(fn) { fn(42); } };
+  oath(obj, 'stub')(function(arg) {
+    assert(42 === arg);
+  });
+});
+
 var fix1 = [ new Error('test') ];
 fixture('oath(cb -> err)', fix1 , function(argv) {
   assert(argv.length === 1);

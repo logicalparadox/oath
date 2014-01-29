@@ -32,13 +32,19 @@ var exports = module.exports = createThunk;
  * res(alsoNext);
  * ```
  *
- * @param {Function} first callback
- * @param {Object} context to invoke callback(s) with
+ * @param {Function|Object} first callback or context
+ * @param {Object|String} context to invoke callback(s) with or method name
  * @return {Function} completed handle
  * @api public
  */
 
 function createThunk(cb, ctx) {
+  if ('string' === typeof ctx) {
+    var tmp = ctx;
+    ctx = cb;
+    cb = ctx[tmp];
+  }
+
   var t = {
     ctx: ctx || null,
     res: null,
