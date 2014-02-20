@@ -196,7 +196,7 @@ Defer.prototype.wait = function() {
   var self = this;
   return function(next) {
     if (self._res) return next(self._res[0], self._res[1]);
-    self._handle.push(fn);
+    self._handle.push(next);
   }
 };
 
