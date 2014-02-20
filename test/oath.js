@@ -55,3 +55,16 @@ test('oath.wrap(fixture, ctx, ctx)', function() {
     assert(res === 'foo');
   });
 });
+
+test('oath.defer()', function(done) {
+  var def = oath.defer();
+  setTimeout(function() {
+    def.cb()(null, 'hello');
+  }, 10);
+
+  def.wait()(function(err, res) {
+    assert(!err);
+    assert(res == 'hello');
+    done();
+  });
+});

@@ -182,3 +182,30 @@ exports.wrap = function(method, sctx, tctx) {
     return done.thunk;
   };
 };
+
+exports.defer = function() {
+  return new Defer();
+};
+
+function Defer() {
+  this._handles = [];
+  this._res = null;
+}
+
+Defer.prototype.wait = function() {
+  var self = this;
+  return function(next) {
+    if (self._res) return next(self._res[0], self._res[1]);
+    self._handle.push(fn);
+  }
+};
+
+Defer.prototype.cb = function() {
+  var self = this;
+  return function(err, res) {
+    self._res = [ err, res ];
+    while (self._handles.length) {
+      self._handles.shift()(err, res);
+    }
+  }
+};
